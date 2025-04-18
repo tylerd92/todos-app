@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 
 import todoRoutes from "./routes/todo.routes.js";
+import connectToMongoDB from "./db/connectToMongoDB.js";
 
 const app = express();
 
@@ -15,5 +16,6 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
+  connectToMongoDB();
   console.log(`Server is running on port ${PORT}`);
 });
