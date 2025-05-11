@@ -3,15 +3,15 @@ import User from "../models/user.model.js";
 
 export const signup = async (req, res) => {
   try {
-    const { email, password, confirmpassword } = req.body;
+    const { email, password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
 
     const user = await User.findOne({ email: email });
     if (user) {
       return res.status(400).json({ message: "User already exists" });
-    }
-
-    if (password !== confirmpassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
     }
 
     const salt = await bcrypt.genSalt(10);
