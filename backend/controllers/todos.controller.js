@@ -48,8 +48,26 @@ export const getTodosUserById = async (req, res) => {
   }
 };
 
-export const updateTodo = (req, res) => {
-  res.send("Update todo!");
+export const updateTodo = async (req, res) => {
+  const { text, completed } = req.body;
+  const { id } = req.params;
+  try {
+    const todo = await Todo.findById(id);
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    todo.text = text;
+    if (completed !== undefined) {
+      todo.completed = completed;
+    }
+
+    const updatedTodo = await todo.save();
+    res.status(200).json(updatedTodo);
+  } catch (error) {
+    console.error("Error updating todo:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const deleteTodo = (req, res) => {
