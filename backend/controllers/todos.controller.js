@@ -70,6 +70,17 @@ export const updateTodo = async (req, res) => {
   }
 };
 
-export const deleteTodo = (req, res) => {
-  res.send("Delete todo!");
+export const deleteTodo = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const todo = await Todo.findById(id);
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+    await Todo.deleteOne({ _id: id });
+    res.status(200).json({ message: "Todo deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting todo:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
