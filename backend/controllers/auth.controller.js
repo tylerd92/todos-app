@@ -6,12 +6,12 @@ export const signup = async (req, res) => {
     const { email, password, confirmPassword } = req.body;
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
+      return res.status(400).json({ error: "Passwords do not match" });
     }
 
     const user = await User.findOne({ email: email });
     if (user) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ error: "User already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -31,11 +31,11 @@ export const signup = async (req, res) => {
         email: newUser.email,
       });
     } else {
-      return res.status(400).json({ message: "Invalid user data" });
+      return res.status(400).json({ error: "Invalid user data" });
     }
   } catch (error) {
     console.error("Error during signup:", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -49,7 +49,7 @@ export const login = async (req, res) => {
     );
 
     if (!user || !isPasswordCorrect) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     //generateTokenAndSetCookie(user._id, res);
@@ -59,7 +59,7 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in login controller:", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
