@@ -1,22 +1,14 @@
 import { useState } from "react";
+import useLogin from "../../hooks/useLogin";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { loading, login } = useLogin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Here you would typically handle the login logic, such as sending a request to your backend
-    console.log("Username:", username);
-    console.log("Password:", password);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    await login(username, password);
   };
 
   return (
@@ -115,10 +107,10 @@ const Login = () => {
             <div>
               <button
                 type='submit'
-                disabled={isLoading}
+                disabled={loading}
                 className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out'
               >
-                {isLoading ? (
+                {loading ? (
                   <svg
                     className='animate-spin -ml-1 mr-3 h-5 w-5 text-white'
                     xmlns='http://www.w3.org/2000/svg'
@@ -154,7 +146,7 @@ const Login = () => {
                     />
                   </svg>
                 )}
-                {isLoading ? "Signing in..." : "Sign in"}
+                {loading ? "Signing in..." : "Sign in"}
               </button>
             </div>
 
