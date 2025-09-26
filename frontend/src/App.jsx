@@ -24,7 +24,6 @@ function App() {
           element={authUser ? <Navigate to='/' /> : <SignUp />}
         />
       </Routes>
-      <Toaster />
     </>
   );
 }
