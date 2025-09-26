@@ -31,6 +31,8 @@ const useLogin = () => {
       setLoading(false);
     }
   };
+
+  return { loading, login };
 };
 
 function handleInputErrors({ email, password }) {
