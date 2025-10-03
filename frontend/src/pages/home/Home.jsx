@@ -1,11 +1,26 @@
 import { useState, useEffect } from "react";
 import { useAuthContext } from "../../context/AuthContext";
+import useTodos from "../../hooks/useTodos";
 
 const Home = () => {
   const { authUser, setAuthUser } = useAuthContext();
-  const [todos, setTodos] = useState([]);
+  const {
+    todos,
+    loading,
+    addTodo,
+    loadTodos,
+    toggleTodo,
+    updateTodo,
+    deleteTodo,
+    stats,
+  } = useTodos();
   const [newTodo, setNewTodo] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (authUser?._id) {
+      loadTodos(authUser._id);
+    }
+  }, [authUser?._id, loadTodos]);
 
   const handleLogout = () => {
     localStorage.removeItem("todo-user");
@@ -14,30 +29,8 @@ const Home = () => {
 
   const handleAddTodo = async (e) => {
     e.preventDefault();
-    if (!newTodo.trim()) return;
-
-    // TODO: Add API call to create todo
-    const todo = {
-      id: Date.now(),
-      text: newTodo,
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    setTodos((prev) => [todo, ...prev]);
+    await addTodo(newTodo, authUser._id);
     setNewTodo("");
-  };
-
-  const toggleTodo = (id) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
-  const deleteTodo = (id) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
   };
 
   return (
@@ -155,19 +148,19 @@ const Home = () => {
                 <div className='flex justify-between items-center'>
                   <span className='text-sm text-gray-600'>Total Tasks</span>
                   <span className='text-lg font-bold text-gray-900'>
-                    {todos.length}
+                    {stats.total}
                   </span>
                 </div>
                 <div className='flex justify-between items-center'>
                   <span className='text-sm text-gray-600'>Completed</span>
                   <span className='text-lg font-bold text-green-600'>
-                    {todos.filter((todo) => todo.completed).length}
+                    {stats.completed}
                   </span>
                 </div>
                 <div className='flex justify-between items-center'>
                   <span className='text-sm text-gray-600'>Pending</span>
                   <span className='text-lg font-bold text-orange-500'>
-                    {todos.filter((todo) => !todo.completed).length}
+                    {stats.pending}
                   </span>
                 </div>
               </div>
@@ -212,7 +205,7 @@ const Home = () => {
                 <div className='space-y-3'>
                   {todos.map((todo) => (
                     <div
-                      key={todo.id}
+                      key={todo._id}
                       className={`flex items-start space-x-3 p-4 border rounded-lg transition duration-150 ease-in-out ${
                         todo.completed
                           ? "bg-gray-50 border-gray-200"
@@ -220,7 +213,7 @@ const Home = () => {
                       }`}
                     >
                       <button
-                        onClick={() => toggleTodo(todo.id)}
+                        onClick={() => toggleTodo(todo._id)}
                         className={`flex-shrink-0 mt-1 h-5 w-5 rounded border-2 transition duration-150 ease-in-out ${
                           todo.completed
                             ? "bg-green-500 border-green-500"
@@ -256,7 +249,7 @@ const Home = () => {
                         </p>
                       </div>
                       <button
-                        onClick={() => deleteTodo(todo.id)}
+                        onClick={() => deleteTodo(todo._id)}
                         className='flex-shrink-0 p-1 text-gray-400 hover:text-red-500 transition duration-150 ease-in-out'
                       >
                         <svg
