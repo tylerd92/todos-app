@@ -70,6 +70,22 @@ export const updateTodo = async (req, res) => {
   }
 };
 
+export const toggleTodo = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const todo = await Todo.findById(id);
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+    todo.completed = !todo.completed;
+    const updatedTodo = await todo.save();
+    res.status(200).json(updatedTodo);
+  } catch (error) {
+    console.error("Error toggling todo:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const deleteTodo = async (req, res) => {
   const { id } = req.params;
   try {
