@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import toast from "react-hot-toast";
 
 const useTodos = () => {
@@ -6,10 +6,11 @@ const useTodos = () => {
   const [loading, setLoading] = useState(false);
 
   const addTodo = async (text, userId) => {
-    if (!text.trim()) return;
-    setLoading(true);
+    if (!text.trim() || !userId) return;
 
+    const previousTodos = [...todos]; // Save current state for rollback
     try {
+      setLoading(true);
       const res = await fetch("/api/todos/", {
         method: "POST",
         headers: {
@@ -17,41 +18,54 @@ const useTodos = () => {
         },
         body: JSON.stringify({ text, userId }),
       });
-      const newTodo = await res.json();
-      if (newTodo.error) {
-        throw new Error(newTodo.error);
-      }
-      setTodos((prev) => [newTodo, ...prev]);
-      toast.success("Todo created successfully");
-    } catch (error) {
-      toast.error("Failed to create todo");
-      console.error("Error creating todo:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadTodos = async (userId) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/todos/user/${userId}`);
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const data = await res.json();
-
-      // Since backend always returns an array (even if empty), we can directly set it
-      setTodos(data);
+      const newTodo = await res.json();
+      setTodos((prev) => [newTodo, ...prev]);
+      toast.success("Todo created successfully");
     } catch (error) {
+      setTodos(previousTodos); // Rollback on error
+      toast.error("Failed to create todo");
+      console.error("Error creating todo:", error);
+    } finally {
+      setLoading(false); // Ensure loading is always set to false
+    }
+  };
+
+  // Make loadTodos memoized with useCallback
+  const loadTodos = useCallback(async (userId) => {
+    if (!userId) return;
+
+    // Create an AbortController for this request
+    const controller = new AbortController();
+    setLoading(true);
+
+    try {
+      const res = await fetch(`/api/todos/user/${userId}`, {
+        signal: controller.signal, // Add abort signal to the request
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      setTodos(Array.isArray(data) ? data : []);
+    } catch (error) {
+      if (error.name === "AbortError") {
+        // Request was aborted, ignore the error
+        return;
+      }
       console.error("Error loading todos:", error);
-      setTodos([]); // Reset to empty array on error
+      setTodos([]);
       toast.error("Failed to load todos");
     } finally {
       setLoading(false);
     }
-  };
+
+    return () => controller.abort(); // Return cleanup function
+  }, []);
 
   const toggleTodo = async (id) => {
     setLoading(true);
@@ -131,7 +145,7 @@ const useTodos = () => {
   };
 
   return {
-    todos: todosArray,
+    todos: Array.isArray(todos) ? todos : [],
     loading,
     stats,
     addTodo,
