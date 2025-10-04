@@ -35,13 +35,18 @@ const useTodos = () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/todos/user/${userId}`);
-      const data = await res.json();
-      if (data.error) {
-        throw new Error(data.error);
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
+
+      const data = await res.json();
+
+      // Since backend always returns an array (even if empty), we can directly set it
       setTodos(data);
-      setLoading(false);
     } catch (error) {
+      console.error("Error loading todos:", error);
+      setTodos([]); // Reset to empty array on error
       toast.error("Failed to load todos");
     } finally {
       setLoading(false);
@@ -62,10 +67,11 @@ const useTodos = () => {
         prev.map((todo) => (todo._id === id ? updatedTodo : todo))
       );
       toast.success("Todo toggled successfully");
-      setLoading(false);
     } catch (error) {
       toast.error("Failed to toggle todo");
       console.error("Error toggling todo:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,10 +93,11 @@ const useTodos = () => {
         prev.map((todo) => (todo._id === id ? updatedTodo : todo))
       );
       toast.success("Todo updated successfully");
-      setLoading(false);
     } catch (error) {
       toast.error("Failed to update todo");
       console.error("Error updating todo:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,21 +113,25 @@ const useTodos = () => {
       }
       setTodos((prev) => prev.filter((todo) => todo._id !== id));
       toast.success("Todo deleted successfully");
-      setLoading(false);
     } catch (error) {
       toast.error("Failed to delete todo");
       console.error("Error deleting todo:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Ensure todos is always an array before using filter
+  const todosArray = Array.isArray(todos) ? todos : [];
+
   const stats = {
-    total: todos.length,
-    completed: todos.filter((todo) => todo.completed).length,
-    pending: todos.filter((todo) => !todo.completed).length,
+    total: todosArray.length,
+    completed: todosArray.filter((todo) => todo.completed).length,
+    pending: todosArray.filter((todo) => !todo.completed).length,
   };
 
   return {
-    todos,
+    todos: todosArray,
     loading,
     stats,
     addTodo,
