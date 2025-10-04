@@ -11,10 +11,10 @@ import {
 const router = express.Router();
 
 router.post("/", createTodo);
-router.get("/:id", getTodo);
 router.get("/user/:userId", getTodosUserById);
+router.patch("/:id/toggle", toggleTodo);
+router.get("/:id", getTodo);
 router.put("/:id", updateTodo);
 router.delete("/:id", deleteTodo);
-router.patch("/:id/toggle", toggleTodo);
 
 export default router;
