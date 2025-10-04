@@ -16,6 +16,7 @@
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.6.2",
     "tailwindcss": "^4.1.11",
+    "todos-app": "file:..",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
